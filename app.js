@@ -854,14 +854,7 @@ function guardPage() {
         localStorage.getItem(AUTH_STORAGE_KEY) === "true" &&
         Boolean(getCurrentUser());
 
-    if (page !== "login" && !isLoggedIn) {
-        window.location.href = "index.html";
     }
-
-    if (page === "login" && isLoggedIn) {
-        window.location.href = "dashboard.html";
-    }
-}
 
 function setActiveNav() {
     const page = document.body.dataset.page;
