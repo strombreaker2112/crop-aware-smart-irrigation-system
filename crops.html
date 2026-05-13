@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Farming Automation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="crops">
+    <nav class="navbar">
+        <div class="nav-container">
+            <a class="brand" href="dashboard.html" aria-label="FarmDash">
+                <span class="brand-mark" aria-hidden="true"></span>
+                <span data-i18n="brand">FarmDash</span>
+            </a>
+            <div class="nav-links" aria-label="Primary navigation">
+                <a class="nav-item" href="dashboard.html" data-page-link="dashboard" data-i18n="navDashboard">Dashboard</a>
+                <a class="nav-item" href="history.html" data-page-link="history" data-i18n="navHistory">Historical Data</a>
+                <a class="nav-item" href="crops.html" data-page-link="crops" data-i18n="navCrops">Crop Database</a>
+                <a class="nav-item" href="schemes.html" data-page-link="schemes" data-i18n="navSchemes">Gov Schemes</a>
+            </div>
+            <div class="nav-actions">
+                <div class="nav-language" aria-label="Language selector">
+                <span class="language-label" data-i18n="languageLabel">Language</span>
+                <button class="lang-btn active" type="button" onclick="setLanguage('en')" data-lang="en">EN</button>
+                <button class="lang-btn" type="button" onclick="setLanguage('mr')" data-lang="mr">मर</button>
+                <button class="lang-btn" type="button" onclick="setLanguage('hi')" data-lang="hi">हि</button>
+                </div>
+                <button class="nav-item logout-btn" type="button" onclick="logout()" data-i18n="navLogout">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <header class="page-header">
+            <div>
+                <h1 data-i18n="cropsTitle">Crop Database</h1>
+                <p class="subtitle" data-i18n="cropsSubtitle">Recommended growing parameters for common farm crops.</p>
+            </div>
+        </header>
+
+        <section class="grid-3 crop-grid">
+            <article class="crop-card" tabindex="0" role="button" data-crop-card>
+                <div class="crop-icon tomato">To</div>
+                <h3 data-i18n="cropTomato">Tomato</h3>
+                <div class="tag-wrap">
+                    <span class="tag" data-i18n="moisture6080">Moisture: 60-80%</span>
+                    <span class="tag wheat" data-i18n="highLight">High Light</span>
+                </div>
+                <p data-i18n="tomatoDesc">Requires consistent watering. Auto-irrigation recommended below 50%.</p>
+            </article>
+
+            <article class="crop-card" tabindex="0" role="button" data-crop-card>
+                <div class="crop-icon basil">Ba</div>
+                <h3 data-i18n="cropBasil">Basil</h3>
+                <div class="tag-wrap">
+                    <span class="tag" data-i18n="moisture5070">Moisture: 50-70%</span>
+                    <span class="tag wheat" data-i18n="medLight">Medium Light</span>
+                </div>
+                <p data-i18n="basilDesc">Allow top soil to dry slightly between watering.</p>
+            </article>
+
+            <article class="crop-card" tabindex="0" role="button" data-crop-card>
+                <div class="crop-icon aloe">Al</div>
+                <h3 data-i18n="cropAloe">Aloe Vera</h3>
+                <div class="tag-wrap">
+                    <span class="tag" data-i18n="moisture1030">Moisture: 10-30%</span>
+                    <span class="tag wheat" data-i18n="highLight">High Light</span>
+                </div>
+                <p data-i18n="aloeDesc">Highly drought tolerant. Only water when moisture drops below 15%.</p>
+            </article>
+
+            <article class="crop-card" tabindex="0" role="button" data-crop-card>
+                <div class="crop-icon onion">On</div>
+                <h3 data-i18n="cropOnion">Onion</h3>
+                <div class="tag-wrap">
+                    <span class="tag" data-i18n="moisture4565">Moisture: 45-65%</span>
+                    <span class="tag wheat" data-i18n="highLight">High Light</span>
+                </div>
+                <p data-i18n="onionDesc">Needs steady soil moisture during bulb formation and good drainage.</p>
+            </article>
+
+            <article class="crop-card" tabindex="0" role="button" data-crop-card>
+                <div class="crop-icon cotton">Co</div>
+                <h3 data-i18n="cropCotton">Cotton</h3>
+                <div class="tag-wrap">
+                    <span class="tag" data-i18n="moisture4060">Moisture: 40-60%</span>
+                    <span class="tag wheat" data-i18n="highLight">High Light</span>
+                </div>
+                <p data-i18n="cottonDesc">Prefers warm weather, full sunlight and moderate irrigation intervals.</p>
+            </article>
+
+            <article class="crop-card" tabindex="0" role="button" data-crop-card>
+                <div class="crop-icon sugarcane">Su</div>
+                <h3 data-i18n="cropSugarcane">Sugarcane</h3>
+                <div class="tag-wrap">
+                    <span class="tag" data-i18n="moisture7085">Moisture: 70-85%</span>
+                    <span class="tag wheat" data-i18n="highLight">High Light</span>
+                </div>
+                <p data-i18n="sugarcaneDesc">Heavy feeder crop that benefits from frequent irrigation and rich soil.</p>
+            </article>
+        </section>
+    </main>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>

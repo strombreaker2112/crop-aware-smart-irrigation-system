@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Farming Automation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="schemes">
+    <nav class="navbar">
+        <div class="nav-container">
+            <a class="brand" href="dashboard.html" aria-label="FarmDash">
+                <span class="brand-mark" aria-hidden="true"></span>
+                <span data-i18n="brand">FarmDash</span>
+            </a>
+            <div class="nav-links" aria-label="Primary navigation">
+                <a class="nav-item" href="dashboard.html" data-page-link="dashboard" data-i18n="navDashboard">Dashboard</a>
+                <a class="nav-item" href="history.html" data-page-link="history" data-i18n="navHistory">Historical Data</a>
+                <a class="nav-item" href="crops.html" data-page-link="crops" data-i18n="navCrops">Crop Database</a>
+                <a class="nav-item" href="schemes.html" data-page-link="schemes" data-i18n="navSchemes">Gov Schemes</a>
+            </div>
+            <div class="nav-actions">
+                <div class="nav-language" aria-label="Language selector">
+                <span class="language-label" data-i18n="languageLabel">Language</span>
+                <button class="lang-btn active" type="button" onclick="setLanguage('en')" data-lang="en">EN</button>
+                <button class="lang-btn" type="button" onclick="setLanguage('mr')" data-lang="mr">मर</button>
+                <button class="lang-btn" type="button" onclick="setLanguage('hi')" data-lang="hi">हि</button>
+                </div>
+                <button class="nav-item logout-btn" type="button" onclick="logout()" data-i18n="navLogout">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <header class="page-header">
+            <div>
+                <h1 data-i18n="schemesTitle">Gov Schemes & Subsidies</h1>
+                <p class="subtitle" data-i18n="schemesSubtitle">Useful official portals for income support, crop insurance, irrigation, machinery and farm infrastructure.</p>
+            </div>
+            <div class="status-pill">
+                <span class="status-dot wheat-dot" aria-hidden="true"></span>
+                <span data-i18n="schemesUpdated">Official links</span>
+            </div>
+        </header>
+
+        <section class="scheme-grid">
+            <article class="scheme-card">
+                <span class="scheme-type" data-i18n="schemeIncome">Income Support</span>
+                <h3 data-i18n="pmKisanName">PM-KISAN Samman Nidhi</h3>
+                <p data-i18n="pmKisanDesc">Direct benefit transfer of Rs. 6,000 per year to eligible landholding farmer families.</p>
+                <a class="text-link" href="https://fw.pmkisan.gov.in/" target="_blank" rel="noopener" data-i18n="openOfficial">Open official portal</a>
+            </article>
+
+            <article class="scheme-card">
+                <span class="scheme-type" data-i18n="schemeInsurance">Crop Insurance</span>
+                <h3 data-i18n="pmfbyName">Pradhan Mantri Fasal Bima Yojana</h3>
+                <p data-i18n="pmfbyDesc">Crop insurance cover for notified crops against non-preventable natural risks from sowing to harvest.</p>
+                <a class="text-link" href="https://pmfby.gov.in/" target="_blank" rel="noopener" data-i18n="openOfficial">Open official portal</a>
+            </article>
+
+            <article class="scheme-card">
+                <span class="scheme-type" data-i18n="schemeIrrigation">Irrigation</span>
+                <h3 data-i18n="pmksyName">PM Krishi Sinchayee Yojana</h3>
+                <p data-i18n="pmksyDesc">Supports efficient irrigation, water conservation and micro-irrigation under the “per drop more crop” goal.</p>
+                <a class="text-link" href="https://pmksy.gov.in/" target="_blank" rel="noopener" data-i18n="openOfficial">Open official portal</a>
+            </article>
+
+            <article class="scheme-card highlight">
+                <span class="scheme-type" data-i18n="schemeMaharashtra">Maharashtra DBT</span>
+                <h3 data-i18n="mahaDbtName">MahaDBT Farmer Schemes</h3>
+                <p data-i18n="mahaDbtDesc">Maharashtra portal for agriculture department scheme applications, subsidy tracking and beneficiary lists.</p>
+                <a class="text-link" href="https://mahadbt.maharashtra.gov.in/Farmer/" target="_blank" rel="noopener" data-i18n="openOfficial">Open official portal</a>
+            </article>
+
+            <article class="scheme-card">
+                <span class="scheme-type" data-i18n="schemeInfra">Farm Infrastructure</span>
+                <h3 data-i18n="aifName">Agriculture Infrastructure Fund</h3>
+                <p data-i18n="aifDesc">Interest subvention and credit guarantee support for post-harvest and community farming infrastructure projects.</p>
+                <a class="text-link" href="https://agriinfra.dac.gov.in/" target="_blank" rel="noopener" data-i18n="openOfficial">Open official portal</a>
+            </article>
+
+            <article class="scheme-card">
+                <span class="scheme-type" data-i18n="schemeMachinery">Machinery</span>
+                <h3 data-i18n="smamName">Agricultural Mechanization</h3>
+                <p data-i18n="smamDesc">DBT-linked support for farm machinery, custom hiring centers and mechanization initiatives.</p>
+                <a class="text-link" href="https://agrimachinery.nic.in/" target="_blank" rel="noopener" data-i18n="openOfficial">Open official portal</a>
+            </article>
+        </section>
+    </main>
+
+   <script type="module" src="app.js"></script>
+</body>
+</html>

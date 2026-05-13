@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Farming Automation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="login">
+    <div class="language-dock" aria-label="Language selector">
+        <span class="language-label" data-i18n="languageLabel">Language</span>
+        <button class="lang-btn active" type="button" onclick="setLanguage('en')" data-lang="en">EN</button>
+        <button class="lang-btn" type="button" onclick="setLanguage('mr')" data-lang="mr">मर</button>
+        <button class="lang-btn" type="button" onclick="setLanguage('hi')" data-lang="hi">हि</button>
+    </div>
+
+    <main class="container">
+        <section class="auth-shell">
+            <div class="hero-panel">
+                <div class="eyebrow hero-eyebrow" data-i18n="dashboardEyebrow">Smart Farming Automation</div>
+                <h1 data-i18n="appTitle">Smart Farming Automation</h1>
+                <p data-i18n="loginSubtitle">Sign in to monitor irrigation, moisture and sunlight.</p>
+            </div>
+
+            <form class="auth-card" onsubmit="event.preventDefault(); login();">
+                <h2 data-i18n="loginTitle">Welcome Back</h2>
+                <p data-i18n="loginSubtitle">Sign in to monitor irrigation, moisture and sunlight.</p>
+                <div class="field">
+                    <input type="text" id="username" data-i18n-placeholder="usernamePlaceholder" placeholder="Username (admin)" value="admin" autocomplete="username">
+                </div>
+                <div class="field">
+                    <input type="password" id="password" data-i18n-placeholder="passwordPlaceholder" placeholder="Password (admin)" value="admin" autocomplete="current-password">
+                </div>
+                <button class="primary-btn full-width" type="submit" data-i18n="accessSystem">Access System</button>
+            </form>
+        </section>
+    </main>
+
+   <script type="module" src="app.js"></script>
+</body>
+</html>

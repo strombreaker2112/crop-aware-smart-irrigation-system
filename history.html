@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Farming Automation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="history">
+    <nav class="navbar">
+        <div class="nav-container">
+            <a class="brand" href="dashboard.html" aria-label="FarmDash">
+                <span class="brand-mark" aria-hidden="true"></span>
+                <span data-i18n="brand">FarmDash</span>
+            </a>
+            <div class="nav-links" aria-label="Primary navigation">
+                <a class="nav-item" href="dashboard.html" data-page-link="dashboard" data-i18n="navDashboard">Dashboard</a>
+                <a class="nav-item" href="history.html" data-page-link="history" data-i18n="navHistory">Historical Data</a>
+                <a class="nav-item" href="crops.html" data-page-link="crops" data-i18n="navCrops">Crop Database</a>
+                <a class="nav-item" href="schemes.html" data-page-link="schemes" data-i18n="navSchemes">Gov Schemes</a>
+            </div>
+            <div class="nav-actions">
+                <div class="nav-language" aria-label="Language selector">
+                <span class="language-label" data-i18n="languageLabel">Language</span>
+                <button class="lang-btn active" type="button" onclick="setLanguage('en')" data-lang="en">EN</button>
+                <button class="lang-btn" type="button" onclick="setLanguage('mr')" data-lang="mr">मर</button>
+                <button class="lang-btn" type="button" onclick="setLanguage('hi')" data-lang="hi">हि</button>
+                </div>
+                <button class="nav-item logout-btn" type="button" onclick="logout()" data-i18n="navLogout">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <header class="page-header">
+            <div>
+                <h1 data-i18n="historyTitle">Historical Data</h1>
+                <p class="subtitle" data-i18n="historySubtitle">Saved by date when sensor levels shift sharply or the pump turns on.</p>
+            </div>
+            <div class="header-actions">
+                <button class="primary-btn" type="button" onclick="downloadCSV()" data-i18n="downloadCsv">Download CSV</button>
+                <button class="danger-action" type="button" onclick="clearHistory()" data-i18n="clearHistory">Clear History</button>
+            </div>
+        </header>
+
+        <div class="card table-card">
+            <div class="history-filter">
+                <label for="history-date-select" data-i18n="historyDateLabel">Select Day</label>
+                <select id="history-date-select" onchange="setHistoryDate(this.value)" aria-label="History date"></select>
+            </div>
+            <table id="history-table">
+                <thead>
+                    <tr>
+                        <th data-i18n="thTime">Time</th>
+                        <th data-i18n="thMoisture">Moisture Level</th>
+                        <th data-i18n="thLight">Light Level</th>
+                        <th data-i18n="thValve">Pump Status</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </main>
+
+   <script type="module" src="app.js"></script>
+</body>
+</html>
