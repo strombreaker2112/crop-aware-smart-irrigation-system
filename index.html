@@ -22,16 +22,24 @@
                 <p data-i18n="loginSubtitle">Sign in to monitor irrigation, moisture and sunlight.</p>
             </div>
 
-            <form class="auth-card" onsubmit="event.preventDefault(); login();">
-                <h2 data-i18n="loginTitle">Welcome Back</h2>
-                <p data-i18n="loginSubtitle">Sign in to monitor irrigation, moisture and sunlight.</p>
+            <form class="auth-card" id="auth-form" onsubmit="event.preventDefault(); submitAuthForm();">
+                <div class="auth-tabs" role="tablist" aria-label="Account action">
+                    <button class="auth-tab active" type="button" data-auth-mode="login" onclick="setAuthMode('login')" data-i18n="loginTab">Login</button>
+                    <button class="auth-tab" type="button" data-auth-mode="register" onclick="setAuthMode('register')" data-i18n="registerTab">New Account</button>
+                </div>
+                <h2 id="auth-title" data-i18n="loginTitle">Welcome Back</h2>
+                <p id="auth-copy" data-i18n="loginSubtitle">Sign in to monitor irrigation, moisture and sunlight.</p>
                 <div class="field">
-                    <input type="text" id="username" data-i18n-placeholder="usernamePlaceholder" placeholder="Username (admin)" value="admin" autocomplete="username">
+                    <input type="text" id="username" data-i18n-placeholder="accountUsernamePlaceholder" placeholder="Username" value="viraj" autocomplete="username">
                 </div>
                 <div class="field">
-                    <input type="password" id="password" data-i18n-placeholder="passwordPlaceholder" placeholder="Password (admin)" value="admin" autocomplete="current-password">
+                    <input type="password" id="password" data-i18n-placeholder="accountPasswordPlaceholder" placeholder="Password" value="Viraj2112" autocomplete="current-password">
                 </div>
-                <button class="primary-btn full-width" type="submit" data-i18n="accessSystem">Access System</button>
+                <div class="field" data-register-only hidden>
+                    <input type="password" id="confirm-password" data-i18n-placeholder="confirmPasswordPlaceholder" placeholder="Confirm password" autocomplete="new-password">
+                </div>
+                <button class="primary-btn full-width" id="auth-submit" type="submit" data-i18n="accessSystem">Access System</button>
+                <div class="auth-message" id="auth-message" role="alert" hidden></div>
             </form>
         </section>
     </main>

@@ -39,8 +39,21 @@ const logsRef = ref(
 
 const HISTORY_STORAGE_KEY = "farmdash-history";
 const HISTORY_DATE_STORAGE_KEY = "farmdash-history-date";
+const AUTH_STORAGE_KEY = "farmdash-auth";
+const AUTH_USER_STORAGE_KEY = "farmdash-auth-user";
+const ACCOUNTS_STORAGE_KEY = "farmdash-accounts";
+const USERS_DB_PATH = "smart_irrigation/users";
+const PASSWORD_HASH_SALT = "farmdash-pbl-v1";
 const MOISTURE_DRASTIC_CHANGE = 7;
 const LIGHT_DRASTIC_CHANGE = 10;
+
+const DEFAULT_ACCOUNTS = [
+    {
+        username: "viraj",
+        password: "Viraj2112",
+        displayName: "Viraj"
+    }
+];
 
 const mqttHost =
 "wss://b736600fb46243e38eb3d7685b6eb50e.s1.eu.hivemq.cloud:8884/mqtt";
@@ -68,6 +81,21 @@ const translations = {
         usernamePlaceholder: "Username (admin)",
         passwordPlaceholder: "Password (admin)",
         accessSystem: "Access System",
+        loginTab: "Login",
+        registerTab: "New Account",
+        accountUsernamePlaceholder: "Username",
+        accountPasswordPlaceholder: "Password",
+        confirmPasswordPlaceholder: "Confirm password",
+        createAccountTitle: "Create Account",
+        createAccountSubtitle: "Add a new FarmDash user account.",
+        createAccount: "Create Account",
+        usernameRequired: "Enter a username.",
+        invalidUsername: "Use 3-30 letters, numbers, dashes or underscores.",
+        passwordRequired: "Enter a password.",
+        passwordTooShort: "Password must be at least 6 characters.",
+        passwordsDoNotMatch: "Passwords do not match.",
+        usernameTaken: "That username already exists.",
+        accountCreated: "Account created. Signing you in.",
         incorrectCredentials: "Incorrect credentials",
         dashboardEyebrow: "Smart Farming Automation",
         dashboardTitle: "Welcome, Viraj",
@@ -334,6 +362,7 @@ const translations = {
 };
 
 let currentLanguage = localStorage.getItem("farmdash-language") || "en";
+let authMode = "login";
 let autoMode = localStorage.getItem("farmdash-auto-mode") === "true";
 let lastValveState = Number(localStorage.getItem("farmdash-last-pump") || 0);
 let historyData = loadHistory();
@@ -354,6 +383,358 @@ function setLanguage(language) {
     applyTranslations();
 }
 
+function normalizeUsername(username) {
+    return String(username || "").trim().toLowerCase();
+}
+
+function isValidUsername(username) {
+    return /^[a-z0-9_-]{3,30}$/.test(username);
+}
+
+function formatDisplayName(username) {
+    return String(username || "")
+        .replace(/[_-]+/g, " ")
+        .replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+function hashPassword(password) {
+    const text = `${PASSWORD_HASH_SALT}:${password}`;
+    let hash = 2166136261;
+
+    for (let index = 0; index < text.length; index += 1) {
+        hash ^= text.charCodeAt(index);
+        hash +=
+            (hash << 1) +
+            (hash << 4) +
+            (hash << 7) +
+            (hash << 8) +
+            (hash << 24);
+    }
+
+    return `v1:${(hash >>> 0).toString(16).padStart(8, "0")}`;
+}
+
+function normalizeAccount(account) {
+    const username = normalizeUsername(account && account.username);
+
+    if (!username) {
+        return null;
+    }
+
+    const passwordHash =
+        account.passwordHash ||
+        (
+            account.password
+            ? hashPassword(account.password)
+            : ""
+        );
+
+    if (!passwordHash) {
+        return null;
+    }
+
+    return {
+        username,
+        displayName: account.displayName || formatDisplayName(username),
+        passwordHash,
+        createdAt: Number(account.createdAt) || Date.now()
+    };
+}
+
+function loadAccounts() {
+    try {
+        const storedAccounts = JSON.parse(
+            localStorage.getItem(ACCOUNTS_STORAGE_KEY) || "[]"
+        );
+
+        if (!Array.isArray(storedAccounts)) {
+            return [];
+        }
+
+        const accountsByName = new Map();
+
+        storedAccounts.forEach((account) => {
+            const normalizedAccount = normalizeAccount(account);
+
+            if (normalizedAccount) {
+                accountsByName.set(
+                    normalizedAccount.username,
+                    normalizedAccount
+                );
+            }
+        });
+
+        return Array.from(accountsByName.values());
+    } catch (error) {
+        return [];
+    }
+}
+
+function saveAccounts(accounts) {
+    localStorage.setItem(
+        ACCOUNTS_STORAGE_KEY,
+        JSON.stringify(accounts)
+    );
+}
+
+function getLocalAccount(username) {
+    return loadAccounts().find((account) => {
+        return account.username === normalizeUsername(username);
+    }) || null;
+}
+
+function addOrUpdateLocalAccount(account) {
+    const normalizedAccount = normalizeAccount(account);
+
+    if (!normalizedAccount) {
+        return null;
+    }
+
+    const accounts = loadAccounts().filter((storedAccount) => {
+        return storedAccount.username !== normalizedAccount.username;
+    });
+
+    accounts.push(normalizedAccount);
+
+    saveAccounts(accounts);
+
+    return normalizedAccount;
+}
+
+function ensureDefaultAccounts() {
+    DEFAULT_ACCOUNTS.forEach((account) => {
+        const username = normalizeUsername(account.username);
+
+        if (!getLocalAccount(username)) {
+            addOrUpdateLocalAccount(account);
+        }
+    });
+}
+
+function getAccountRef(username) {
+    return ref(
+        db,
+        `${USERS_DB_PATH}/${normalizeUsername(username)}`
+    );
+}
+
+async function getRemoteAccount(username) {
+    try {
+        const snapshot = await get(getAccountRef(username));
+
+        if (!snapshot.exists()) {
+            return null;
+        }
+
+        return addOrUpdateLocalAccount({
+            ...snapshot.val(),
+            username
+        });
+    } catch (error) {
+        console.log("Account load failed", error);
+        return null;
+    }
+}
+
+async function saveRemoteAccount(account) {
+    const normalizedAccount = normalizeAccount(account);
+
+    if (!normalizedAccount) {
+        return false;
+    }
+
+    try {
+        await set(
+            getAccountRef(normalizedAccount.username),
+            {
+                username: normalizedAccount.username,
+                displayName: normalizedAccount.displayName,
+                passwordHash: normalizedAccount.passwordHash,
+                createdAt: normalizedAccount.createdAt
+            }
+        );
+
+        return true;
+    } catch (error) {
+        console.log("Account sync failed", error);
+        return false;
+    }
+}
+
+function syncDefaultAccountsToRemote() {
+    DEFAULT_ACCOUNTS.forEach(async (account) => {
+        const username = normalizeUsername(account.username);
+        const existingAccount = await getRemoteAccount(username);
+
+        if (!existingAccount) {
+            await saveRemoteAccount(account);
+        }
+    });
+}
+
+async function findAccount(username) {
+    const localAccount = getLocalAccount(username);
+
+    if (localAccount) {
+        return localAccount;
+    }
+
+    return getRemoteAccount(username);
+}
+
+function setAuthSession(account) {
+    const normalizedAccount = normalizeAccount(account);
+
+    if (!normalizedAccount) {
+        return;
+    }
+
+    localStorage.setItem(AUTH_STORAGE_KEY, "true");
+    localStorage.setItem(
+        AUTH_USER_STORAGE_KEY,
+        JSON.stringify({
+            username: normalizedAccount.username,
+            displayName: normalizedAccount.displayName
+        })
+    );
+}
+
+function getCurrentUser() {
+    try {
+        const storedUser = JSON.parse(
+            localStorage.getItem(AUTH_USER_STORAGE_KEY) || "null"
+        );
+
+        if (storedUser && storedUser.username) {
+            return {
+                username: normalizeUsername(storedUser.username),
+                displayName:
+                    storedUser.displayName ||
+                    formatDisplayName(storedUser.username)
+            };
+        }
+    } catch (error) {
+        localStorage.removeItem(AUTH_USER_STORAGE_KEY);
+    }
+
+    if (localStorage.getItem(AUTH_STORAGE_KEY) === "true") {
+        return {
+            username: "viraj",
+            displayName: "Viraj"
+        };
+    }
+
+    return null;
+}
+
+function updateCurrentUserText() {
+    const user = getCurrentUser();
+    const displayName = user ? user.displayName : "Viraj";
+
+    document.querySelectorAll("[data-current-user]").forEach((element) => {
+        element.textContent = displayName;
+    });
+
+    const dashboardTitle = document.querySelector("[data-dashboard-title]");
+
+    if (dashboardTitle) {
+        dashboardTitle.textContent = `Welcome, ${displayName}`;
+    }
+}
+
+function showAuthMessage(message, type = "error") {
+    const messageElement = document.getElementById("auth-message");
+
+    if (!messageElement) {
+        if (message) {
+            alert(message);
+        }
+
+        return;
+    }
+
+    messageElement.textContent = message;
+    messageElement.classList.toggle("success", type === "success");
+    messageElement.hidden = !message;
+}
+
+function setAuthBusy(isBusy) {
+    const form = document.getElementById("auth-form");
+
+    if (!form) {
+        return;
+    }
+
+    form.querySelectorAll("button, input").forEach((element) => {
+        element.disabled = isBusy;
+    });
+}
+
+function updateAuthMode() {
+    const isRegister = authMode === "register";
+    const title = document.getElementById("auth-title");
+    const copy = document.getElementById("auth-copy");
+    const submitButton = document.getElementById("auth-submit");
+    const passwordInput = document.getElementById("password");
+    const confirmPasswordInput = document.getElementById("confirm-password");
+
+    document.querySelectorAll("[data-auth-mode]").forEach((button) => {
+        button.classList.toggle(
+            "active",
+            button.dataset.authMode === authMode
+        );
+    });
+
+    document.querySelectorAll("[data-register-only]").forEach((element) => {
+        element.hidden = !isRegister;
+    });
+
+    if (title) {
+        title.textContent = t(isRegister ? "createAccountTitle" : "loginTitle");
+    }
+
+    if (copy) {
+        copy.textContent = t(isRegister ? "createAccountSubtitle" : "loginSubtitle");
+    }
+
+    if (submitButton) {
+        submitButton.textContent = t(isRegister ? "createAccount" : "accessSystem");
+    }
+
+    if (passwordInput) {
+        passwordInput.autocomplete =
+            isRegister
+            ? "new-password"
+            : "current-password";
+    }
+
+    if (confirmPasswordInput) {
+        confirmPasswordInput.required = isRegister;
+        confirmPasswordInput.disabled = !isRegister;
+    }
+}
+
+function setAuthMode(mode) {
+    authMode = mode === "register" ? "register" : "login";
+    showAuthMessage("");
+    updateAuthMode();
+}
+
+async function submitAuthForm() {
+    setAuthBusy(true);
+
+    try {
+        if (authMode === "register") {
+            await createAccount();
+        } else {
+            await login();
+        }
+    } finally {
+        setAuthBusy(false);
+        updateAuthMode();
+    }
+}
+
 function applyTranslations() {
     document.documentElement.lang = currentLanguage;
     document.title = t("appTitle");
@@ -372,26 +753,95 @@ function applyTranslations() {
 
     updateAutoButton();
     updatePumpText(lastValveState);
+    updateAuthMode();
+    updateCurrentUserText();
     renderHistory();
 }
 
-function login() {
-    const username = document.getElementById("username").value;
+async function login() {
+    const username = normalizeUsername(document.getElementById("username").value);
     const password = document.getElementById("password").value;
 
-    if (username === "admin" && password === "admin") {
-        localStorage.setItem("farmdash-auth", "true");
+    if (!username) {
+        showAuthMessage(t("usernameRequired"));
+        return;
+    }
+
+    if (!password) {
+        showAuthMessage(t("passwordRequired"));
+        return;
+    }
+
+    const account = await findAccount(username);
+
+    if (account && account.passwordHash === hashPassword(password)) {
+        setAuthSession(account);
         window.location.href = "dashboard.html";
         return;
     }
 
-    alert(t("incorrectCredentials"));
+    showAuthMessage(t("incorrectCredentials"));
+}
+
+async function createAccount() {
+    const username = normalizeUsername(document.getElementById("username").value);
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirm-password").value;
+
+    if (!username) {
+        showAuthMessage(t("usernameRequired"));
+        return;
+    }
+
+    if (!isValidUsername(username)) {
+        showAuthMessage(t("invalidUsername"));
+        return;
+    }
+
+    if (!password) {
+        showAuthMessage(t("passwordRequired"));
+        return;
+    }
+
+    if (password.length < 6) {
+        showAuthMessage(t("passwordTooShort"));
+        return;
+    }
+
+    if (password !== confirmPassword) {
+        showAuthMessage(t("passwordsDoNotMatch"));
+        return;
+    }
+
+    const existingAccount = await findAccount(username);
+
+    if (existingAccount) {
+        showAuthMessage(t("usernameTaken"));
+        return;
+    }
+
+    const account = addOrUpdateLocalAccount({
+        username,
+        passwordHash: hashPassword(password),
+        displayName: formatDisplayName(username),
+        createdAt: Date.now()
+    });
+
+    await saveRemoteAccount(account);
+
+    showAuthMessage(t("accountCreated"), "success");
+    setAuthSession(account);
+    window.location.href = "dashboard.html";
 }
 
 function logout() {
 
     localStorage.removeItem(
-        "farmdash-auth"
+        AUTH_STORAGE_KEY
+    );
+
+    localStorage.removeItem(
+        AUTH_USER_STORAGE_KEY
     );
 
     window.location.href =
@@ -400,7 +850,9 @@ function logout() {
 
 function guardPage() {
     const page = document.body.dataset.page;
-    const isLoggedIn = localStorage.getItem("farmdash-auth") === "true";
+    const isLoggedIn =
+        localStorage.getItem(AUTH_STORAGE_KEY) === "true" &&
+        Boolean(getCurrentUser());
 
     if (page !== "login" && !isLoggedIn) {
         window.location.href = "index.html";
@@ -1288,6 +1740,9 @@ function initMQTT() {
 
 function initPage() {
 
+    ensureDefaultAccounts();
+    syncDefaultAccountsToRemote();
+
     guardPage();
 
     setActiveNav();
@@ -1328,6 +1783,8 @@ function initPage() {
 }
 
 window.login = login;
+window.submitAuthForm = submitAuthForm;
+window.setAuthMode = setAuthMode;
 window.logout = logout;
 window.setLanguage = setLanguage;
 window.downloadCSV = downloadCSV;
